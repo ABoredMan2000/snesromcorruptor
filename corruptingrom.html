@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>SNES ROM Corruptor 3000 💥</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px;
+      text-align: center;
+    }
+
+    label[for="romInput"] {
+      display: inline-block;
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 10px;
+      transition: background 0.3s ease;
+    }
+
+    label[for="romInput"]:hover {
+      background-color: #444;
+    }
+
+    input[type="range"] {
+      width: 300px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      margin: 20px;
+      background-color: #c00;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #f00;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #888;
+    }
+
+    #corruptLevelDisplay {
+      font-weight: bold;
+      color: #0f0;
+    }
+
+    footer {
+      background-color: #2c2c2c;
+      color: #aaa;
+      text-align: center;
+      padding: 15px 10px;
+      font-size: 14px;
+      border-top: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SNES ROM Corruptor 3000 💥</h1>
+    <p>Lade deine <code>.sfc</code> Datei hoch und wähle, wie hart sie zerstört werden soll.</p>
+
+    <!-- Hübscher Datei-Upload -->
+    <label for="romInput">🎮 ROM auswählen</label>
+    <input type="file" id="romInput" accept=".sfc">
+    <p id="fileNameDisplay" style="color: #0f0; font-size: 14px;"></p>
+
+    <!-- Slider -->
+    <label for="corruptLevel">Korruptionslevel: <span id="corruptLevelDisplay">0.0009</span></label><br>
+    <input type="range" id="corruptLevel" min="0.0001" max="0.01" step="0.0001" value="0.0009"><br>
+
+    <!-- Button -->
+    <button onclick="corrupt()">F*CK IT UP 🔥</button>
+
+    <p class="note">Je höher der Wert, desto kaputter. Absturzgefahr steigt!</p>
+
+    <!-- Download-Link -->
+    <a id="downloadLink" style="display:none; color:lime; font-weight:bold;" download="corrupted.sfc">
+      💾 Corrupted ROM herunterladen
+    </a>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    💥 Made with Chaos by <strong style="color:#f69;">Rotstein2013</strong><br>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    const corruptSlider = document.getElementById("corruptLevel");
+    const corruptDisplay = document.getElementById("corruptLevelDisplay");
+
+    corruptSlider.addEventListener("input", () => {
+      corruptDisplay.textContent = corruptSlider.value;
+    });
+
+    document.getElementById('romInput').addEventListener('change', function() {
+      const fileName = this.files[0]?.name || "Keine Datei gewählt";
+      document.getElementById('fileNameDisplay').textContent = `📂 ${fileName}`;
+    });
+
+    function corruptByteArray(buffer, intensity = 0.0009) {
+      const corrupted = new Uint8Array(buffer);
+      const totalBytes = corrupted.length;
+      const corruptCount = Math.floor(totalBytes * intensity);
+
+      for (let i = 0; i < corruptCount; i++) {
+        const index = Math.floor(Math.random() * totalBytes);
+        corrupted[index] = Math.floor(Math.random() * 256);
+      }
+
+      return corrupted;
+    }
+
+    function corrupt() {
+      const input = document.getElementById('romInput');
+      const corruptionLevel = parseFloat(document.getElementById("corruptLevel").value);
+
+      if (!input.files.length) {
+        alert("Bitte lade zuerst eine ROM-Datei hoch.");
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const corrupted = corruptByteArray(e.target.result, corruptionLevel);
+        const blob = new Blob([corrupted], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.getElementById('downloadLink');
+        link.href = url;
+        link.style.display = 'inline-block';
+        link.textContent = '💾 Corrupted ROM herunterladen';
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
+</body>
+</html>
